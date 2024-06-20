@@ -110,6 +110,34 @@ def get_all_posts(token: str, cookies: Dict, proxies: List = None) -> (str, Dict
     return f"Cannot get all posts: {response}"
 
 
+def get_advertising_campaign(token: str, cookies: Dict, proxies: List = None) -> (str, Dict) or str:
+    """
+    Получение всех рекламных кампаний, которые закреплены за пользователем по токену
+    :param token: str
+    :param cookies: Dict
+    :param proxies: List = None
+    :return: (str, Dict) or str
+    """
+    url = f'https://graph.facebook.com/v20.0/me/personal_ad_accounts'
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    # Преобразование куки в формат, используемый requests
+    cookies_dict = {cookie['name']: cookie['value'] for cookie in cookies}
+    response = requests.get(url, headers=headers, cookies=cookies_dict, proxies=proxies, timeout=30).json()['data']
+
+    result = {'data': []}
+    for dict in response:
+        id = dict['id']
+        campaign_url = f'https://graph.facebook.com/v20.0/{id}/campaigns'
+        campaign_response = \
+        requests.get(campaign_url, headers=headers, cookies=cookies_dict, proxies=proxies, timeout=30).json()['data']
+        for campaign in campaign_response:
+            result['data'].append(campaign)
+
+    return result
+
+
 def clean_comments(post_urls: List[str], tokens: List[str], proxies: List[Dict], cookies: List[Dict]) -> None:
     """
     Главная функция, которая запускает вспомогательные для удаления ВСЕХ комментарием под переданными постами
@@ -127,6 +155,3 @@ def clean_comments(post_urls: List[str], tokens: List[str], proxies: List[Dict],
             status_code, response = delete_comment(token, comment['id'], cookie, proxy)
 
             print(f'Deleted comment {comment["id"]}: {response}')
-
-
-

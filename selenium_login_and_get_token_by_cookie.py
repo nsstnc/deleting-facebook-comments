@@ -3,10 +3,17 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-import pickle
+from typing import Dict
 
-# метод для авторизации через куки и получения токена из кода страницы
-def login_and_get_token_by_cookie(cookies, proxy):
+
+def login_and_get_token_by_cookie(cookies: Dict, proxy: str):
+    """
+    Получаем вечный токен пользователя со страницы facebook/adsmanager/. Авторизация через куки, затем ожидание загрузки
+     страницы Selenium и получение токена из кода страницы
+    :param cookies: Dict
+    :param proxy: str
+    :return: str
+    """
     # ChromeOptions с указанием прокси
     chrome_options = Options()
     chrome_options.add_argument(f'--proxy-server={proxy}')
@@ -17,8 +24,10 @@ def login_and_get_token_by_cookie(cookies, proxy):
     # Открытие страницы Facebook для установки домена
     driver.get('https://www.facebook.com/')
 
-    # Добавляем куки в драйвер
+    # Проверка и добавление куки в драйвер
     for cookie in cookies:
+        if 'sameSite' in cookie and cookie['sameSite'] not in ["Strict", "Lax", "None"]:
+            del cookie['sameSite']  # Удалить недопустимый ключ или можно изменить значение
         driver.add_cookie(cookie)
 
     # Теперь мы можем перейти на страницу, к которой хотим получить доступ
