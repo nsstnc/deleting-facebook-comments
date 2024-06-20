@@ -15,6 +15,7 @@ def extract_ids(url):
     print(story_fbid, page_id)
     return story_fbid, page_id
 
+
 def get_new_token(cookies):
     # получение нового токена с использованием куки
     pass
@@ -60,6 +61,18 @@ def get_comments(post_url, token, proxies=None):
 
 
 
+# метод для получения всех постов со страницы
+def get_all_posts(token, proxies=None):
+    url = f'https://graph.facebook.com/v20.0/me/posts'
+    headers = {
+        'Authorization': f'Bearer {token}'
+    }
+    response = requests.get(url, headers=headers, proxies=proxies, timeout=30)
+
+    return response.status_code, response.json()['data']
+
+
+
 post_urls = ['https://www.facebook.com/permalink.php?story_fbid=pfbid032NzMt7pJsH7ek2cZ3FsXo5thnMi6Kyg6Qe2dZfYFpV9KN4RKAuc59xX447RfLg5Ml&id=61561075443726&rdid=AUAXGTL8VK7N1m87']
 tokens = [ACCESS_TOKEN]
 proxies = [
@@ -69,3 +82,5 @@ proxies = [
 cookies = ['']
 
 clean_comments(post_urls, tokens, proxies, cookies)
+
+print(get_all_posts(ACCESS_TOKEN, proxies[0]))
