@@ -99,6 +99,8 @@ def get_all_posts(token: str, cookies: Dict, proxies: List = None) -> (str, Dict
 
     status_code, response = get_page_access_token(token, cookies, proxies)
     if status_code == 200:
+        answer = {'data': []}
+
         page_access_token = response['data'][0]['access_token']
         headers = {
             'Authorization': f'Bearer {page_access_token}',
@@ -106,7 +108,15 @@ def get_all_posts(token: str, cookies: Dict, proxies: List = None) -> (str, Dict
         # Преобразование куки в формат, используемый requests
         cookies_dict = {cookie['name']: cookie['value'] for cookie in cookies}
         response = requests.get(url, headers=headers, cookies=cookies_dict, proxies=proxies, timeout=30)
+
+        if response.status_code == 200:
+            # достаем ссылки на посты из ответа
+            for post in response.json()['data']:
+                answer['data'].append(f'https://www.facebook.com/{post["id"]}')
+            return answer
+
         return response.status_code, response.json()
+
     return f"Cannot get all posts: {response}"
 
 
